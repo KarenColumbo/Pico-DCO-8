@@ -1,1 +1,1 @@
-Output voice CVs on 8 GPIOs //No idea how to do that. Maybe use DCO-1 Range & Gate routine, where the frequency is calculated, and instead put out the sheer frequency
+Output voice CVs on 8 GPIOs (CV_PIN[x]) //"Stole" the Range-pins that are inactive on this board. Still gotta work on the formula to make exponential CVs instead of crazy DCO stuff.
