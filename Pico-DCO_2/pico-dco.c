@@ -29,6 +29,8 @@ float FM_INTENSITY = 5.0f;
 
 const float BASE_NOTE = 440.0f;
 //const uint8_t RESET_PINS[NUM_VOICES] = {13, 8, 12, 9, 11, 10, 7, 6};
+const uint8_t AT_PIN = {20}; //is this correct?
+const uint8_t MW_PIN = {21}; //is this correct?
 const uint8_t CV_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17, 13, 12};
 const uint8_t GATE_PINS[NUM_VOICES] = {2, 3, 4, 5, 6, 7, 8, 9};
 const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1, 1, 1};
@@ -70,7 +72,12 @@ int main() {
     gpio_init(23);
     gpio_set_dir(23, GPIO_OUT);
     gpio_put(23, 1);
-
+    //
+    //
+    // repeat this for pins 20 and 21 (AT & MW)???
+    //
+    //
+    
     // init serial midi
     uart_init(uart0, 31250);
     uart_set_fifo_enabled(uart0, true);
@@ -98,16 +105,21 @@ int main() {
         gpio_init(GATE_PINS[i]);
         gpio_set_dir(GATE_PINS[i], GPIO_OUT);
     }
+    //
+    //
+    // gpio init for modwheel and aftertouch, too???
+    //
+    //
 
     // adc init
-    #if defined(USE_ADC_STACK_VOICES) || defined(USE_ADC_DETUNE) || defined(USE_ADC_FM) 
+    #if defined(defined(USE_ADC_DETUNE) || defined(USE_ADC_FM) 
     adc_init();
     #ifdef USE_ADC_DETUNE
     adc_gpio_init(27);
     #endif
-    #ifdef USE_ADC_STACK_VOICES
-    adc_gpio_init(28);
-    #endif
+    //#ifdef USE_ADC_STACK_VOICES
+    //adc_gpio_init(28);
+    //#endif
     #ifdef USE_ADC_FM
     adc_gpio_init(26);
     #endif
@@ -258,6 +270,11 @@ void serial_midi_task() {
              portamento = msb > 63;
         }
     }
+    //
+    //
+    // Insert Channel Aftertouch & Modwheel here!!! 
+    //
+    //
 }
 
 void note_on(uint8_t note, uint8_t velocity) {
@@ -353,6 +370,11 @@ void voice_task() {
             freq = freq-(freq*((0x2000-midi_pitch_bend)/67000.0f));
             set_frequency(pio[VOICE_TO_PIO[i]], VOICE_TO_SM[i], freq);
             pwm_set_chan_level(CV_PWM_SLICES[i], pwm_gpio_to_channel(CV_PINS[i]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
+            //
+            //
+            // Write Aftertouch and Modwheel here!!!
+            //
+            //
         }
     }
 }
