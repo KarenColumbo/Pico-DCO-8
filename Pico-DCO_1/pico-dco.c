@@ -297,7 +297,7 @@ void note_off(uint8_t note) {
         if (VOICE_NOTES[i] == note) {
             //gpio_put(GATE_PINS[i], 0);
 
-            //VOICE_NOTES[i] = 0;
+            VOICE_NOTES[i] = 0;
             VOICES[i] = 0;
             VOICE_GATE[i] = 0;
         }
