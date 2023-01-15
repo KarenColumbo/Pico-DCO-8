@@ -1,1 +1,1 @@
-Output voice CVs on 8 GPIOs //No idea how to do that
+Output voice CVs on 8 GPIOs //No idea how to do that. Maybe use DCO-1 Range & Gate routine, where the frequency is calculated, and instead put out the sheer frequency
