@@ -1,0 +1,9 @@
+Check out these:
+
+- Get MIDI channel aftertouch and output it on a GPIO pin
+- Get MIDI mod wheel, output it on a GPIO pin AND input it as FM via ADC, send to LFO etc.
+
+Line 21 //which value do I set this to disable voice stacking?
+Line 34 //what do these numbers do?
+Line 35 //what do these numbers do?
+
