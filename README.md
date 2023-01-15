@@ -1,5 +1,5 @@
 # Pico-DCO-8 - untested
-Craig Barnes' DUO Synth with 8 voices, but a lot less functionality. 
+My take on Craig Barnes' ingenious DUO Synth (based in PolyKit's groundbreaking Pico-DCO work) with 8 voices, but just one set of DCOs.
 
 Fresh from VSCode, probability of "It's ALIVE!!!!": 0.00000001 %.
 
