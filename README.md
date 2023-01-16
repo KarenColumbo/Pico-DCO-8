@@ -9,3 +9,15 @@ Pico #2: NOTHING except note on/off gates.
 Work in progress. Completely untested. 
 
 It's a long shot, I know, but: help would be enormously appreciated! :)
+
+16. 1. 2023 - Things done so far:
+
+Board #1
+- disabled Gate Pins, redistributed them to increase voice number to 8
+
+Board #2
+- disabled Reset Pins
+- renamed RANGE PINS to "CV_PINS"
+- added "AT_PIN" - channel aftertouch
+- added "MW_PIN" - mod wheel
+- placeholder comments for additional CVs and stuff
