@@ -6,7 +6,7 @@
 #include "hardware/adc.h"
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
-#include "pico-dco.pio.h"
+#include "pico-dco-1.pio.h"
 #include "hardware/pwm.h"
 #include "bsp/board.h"
 #include "tusb.h"
