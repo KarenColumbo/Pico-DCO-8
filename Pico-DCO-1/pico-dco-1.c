@@ -94,7 +94,7 @@ int main() {
     }
 
     // gate gpio init
-    //for (int i=0; i<NUM_VOICES; i++) {
+    // for (int i=0; i<NUM_VOICES; i++) {
     //    gpio_init(GATE_PINS[i]);
     //    gpio_set_dir(GATE_PINS[i], GPIO_OUT);
     //}
