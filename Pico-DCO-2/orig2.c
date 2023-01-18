@@ -15,29 +15,29 @@
 #define NUM_VOICES 8
 #define MIDI_CHANNEL 1
 #define USE_ADC_STACK_VOICES // gpio 28 (adc 2)
-#define USE_ADC_DETUNE       // gpio 27 (adc 1)
-#define USE_ADC_FM           // gpio 26 (adc 0)
+//#define USE_ADC_DETUNE       // gpio 27 (adc 1)
+//#define USE_ADC_FM           // gpio 26 (adc 0)
 
 uint STACK_VOICES = 1;
-float DETUNE = 0.0f, LAST_DETUNE = 0.0f;
-float FM_VALUE = 0.0f;  
-float LAST_FM = 0.0f;
+//float DETUNE = 0.0f, LAST_DETUNE = 0.0f;
+//float FM_VALUE = 0.0f;  
+//float LAST_FM = 0.0f;
 
 // Scale factor for FM. Controls how intense the effect is at maximum input voltage.
 // Units: Hertz.
-float FM_INTENSITY = 5.0f;          
+// float FM_INTENSITY = 5.0f;          
 
 const float BASE_NOTE = 440.0f;
 //const uint8_t RESET_PINS[NUM_VOICES] = {13, 12, 11, 10};
 //const uint8_t RANGE_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17};
 const uint8_t GATE_PINS[NUM_VOICES] = {2, 3, 4, 5, 6, 7, 8, 9};
-const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1, 1, 1};
-const uint8_t VOICE_TO_SM[NUM_VOICES] = {0, 1, 2, 3, 0, 1, 2, 3};
+//const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1, 1, 1};
+//const uint8_t VOICE_TO_SM[NUM_VOICES] = {0, 1, 2, 3, 0, 1, 2, 3};
 const uint16_t DIV_COUNTER = 1250;
-uint8_t RANGE_PWM_SLICES[NUM_VOICES];
+//uint8_t RANGE_PWM_SLICES[NUM_VOICES];
 
 uint32_t VOICES[NUM_VOICES];
-uint8_t VOICE_NOTES[NUM_VOICES];
+//uint8_t VOICE_NOTES[NUM_VOICES];
 uint8_t VOICE_GATE[NUM_VOICES];
 
 uint8_t NEXT_VOICE = 0;
@@ -87,10 +87,10 @@ int main() {
 
     // pio init
     uint offset[2];
-    offset[0] = pio_add_program(pio[0], &frequency_program);
-    offset[1] = pio_add_program(pio[1], &frequency_program);
+    //offset[0] = pio_add_program(pio[0], &frequency_program);
+    //offset[1] = pio_add_program(pio[1], &frequency_program);
     for (int i=0; i<NUM_VOICES; i++) {
-        //init_sm(pio[VOICE_TO_PIO[i]], VOICE_TO_SM[i], offset[VOICE_TO_PIO[i]], RESET_PINS[i]);
+        init_sm(pio[VOICE_TO_PIO[i], VOICE_TO_SM[i], offset[VOICE_TO_PIO[i]], RESET_PINS[i]);
     }
 
     // gate gpio init
@@ -274,9 +274,9 @@ void note_on(uint8_t note, uint8_t velocity) {
         VOICE_GATE[voice_num] = 1;
 
         float freq = get_freq_from_midi_note(note) * (1 + (pow(-1, i) * DETUNE));
-        set_frequency(pio[VOICE_TO_PIO[voice_num]], VOICE_TO_SM[voice_num], freq);
+        //set_frequency(pio[VOICE_TO_PIO[voice_num]], VOICE_TO_SM[voice_num], freq);
         // amplitude adjustment
-        pwm_set_chan_level(RANGE_PWM_SLICES[voice_num], pwm_gpio_to_channel(RANGE_PINS[voice_num]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
+        //pwm_set_chan_level(RANGE_PWM_SLICES[voice_num], pwm_gpio_to_channel(RANGE_PINS[voice_num]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
         // gate on
         gpio_put(GATE_PINS[voice_num], 1);
     }
@@ -352,7 +352,7 @@ void voice_task() {
             
             freq = freq-(freq*((0x2000-midi_pitch_bend)/67000.0f));
             set_frequency(pio[VOICE_TO_PIO[i]], VOICE_TO_SM[i], freq);
-            pwm_set_chan_level(RANGE_PWM_SLICES[i], pwm_gpio_to_channel(RANGE_PINS[i]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
+            //pwm_set_chan_level(RANGE_PWM_SLICES[i], pwm_gpio_to_channel(RANGE_PINS[i]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
         }
     }
 }
