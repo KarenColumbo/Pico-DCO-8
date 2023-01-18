@@ -28,11 +28,11 @@ float LAST_FM = 0.0f;
 float FM_INTENSITY = 5.0f;          
 
 const float BASE_NOTE = 440.0f;
-const uint8_t RESET_PINS[NUM_VOICES] = {13, 8, 12, 9, 11, 10};
-const uint8_t RANGE_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17};
-const uint8_t GATE_PINS[NUM_VOICES] = {2, 3, 4, 5, 6, 7};
-const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1};
-const uint8_t VOICE_TO_SM[NUM_VOICES] = {0, 1, 2, 3, 0, 1};
+const uint8_t RESET_PINS[NUM_VOICES] = {13, 8, 12, 9, 11, 10, 7, 6};
+const uint8_t RANGE_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17, 5, 4};
+//const uint8_t GATE_PINS[NUM_VOICES] = {2, 3, 4, 5, 6, 7};
+const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1, 1, 1};
+const uint8_t VOICE_TO_SM[NUM_VOICES] = {0, 1, 2, 3, 0, 1, 2, 3};
 const uint16_t DIV_COUNTER = 1250;
 uint8_t RANGE_PWM_SLICES[NUM_VOICES];
 
@@ -94,10 +94,10 @@ int main() {
     }
 
     // gate gpio init
-    for (int i=0; i<NUM_VOICES; i++) {
-        gpio_init(GATE_PINS[i]);
-        gpio_set_dir(GATE_PINS[i], GPIO_OUT);
-    }
+    // for (int i=0; i<NUM_VOICES; i++) {
+    //     gpio_init(GATE_PINS[i]);
+    //     gpio_set_dir(GATE_PINS[i], GPIO_OUT);
+    // }
 
     // adc init
     #if defined(USE_ADC_STACK_VOICES) || defined(USE_ADC_DETUNE) || defined(USE_ADC_FM) 
@@ -278,7 +278,7 @@ void note_on(uint8_t note, uint8_t velocity) {
         // amplitude adjustment
         pwm_set_chan_level(RANGE_PWM_SLICES[voice_num], pwm_gpio_to_channel(RANGE_PINS[voice_num]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
         // gate on
-        gpio_put(GATE_PINS[voice_num], 1);
+        // gpio_put(GATE_PINS[voice_num], 1);
     }
     if (portamento) {
         if (portamento_start == 0) {
@@ -295,7 +295,7 @@ void note_off(uint8_t note) {
     // gate off
     for (int i=0; i<NUM_VOICES; i++) {
         if (VOICE_NOTES[i] == note) {
-            gpio_put(GATE_PINS[i], 0);
+            // gpio_put(GATE_PINS[i], 0);
 
             //VOICE_NOTES[i] = 0;
             VOICES[i] = 0;
