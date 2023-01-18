@@ -28,8 +28,8 @@ float LAST_FM = 0.0f;
 float FM_INTENSITY = 5.0f;          
 
 const float BASE_NOTE = 440.0f;
-//const uint8_t RESET_PINS[NUM_VOICES] = {13, 8, 12, 9, 11, 10};
-//const uint8_t RANGE_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17};
+const uint8_t RESET_PINS[NUM_VOICES] = {13, 12, 11, 10};
+const uint8_t RANGE_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17};
 const uint8_t GATE_PINS[NUM_VOICES] = {2, 3, 4, 5, 6, 7, 8, 9};
 const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1, 1, 1};
 const uint8_t VOICE_TO_SM[NUM_VOICES] = {0, 1, 2, 3, 0, 1, 2, 3};
