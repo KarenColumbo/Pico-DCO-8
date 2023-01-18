@@ -12,7 +12,7 @@
 #include "tusb.h"
 #include "hardware/uart.h"
 
-#define NUM_VOICES 6
+#define NUM_VOICES 8
 #define MIDI_CHANNEL 1
 #define USE_ADC_STACK_VOICES // gpio 28 (adc 2)
 #define USE_ADC_DETUNE       // gpio 27 (adc 1)
