@@ -12,7 +12,7 @@
 #include "tusb.h"
 #include "hardware/uart.h"
 
-#define NUM_VOICES 6
+#define NUM_VOICES 8
 #define MIDI_CHANNEL 1
 #define USE_ADC_STACK_VOICES // gpio 28 (adc 2)
 #define USE_ADC_DETUNE       // gpio 27 (adc 1)
@@ -28,11 +28,11 @@ float LAST_FM = 0.0f;
 float FM_INTENSITY = 5.0f;          
 
 const float BASE_NOTE = 440.0f;
-const uint8_t RESET_PINS[NUM_VOICES] = {13, 8, 12, 9, 11, 10};
-const uint8_t RANGE_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17};
-const uint8_t GATE_PINS[NUM_VOICES] = {2, 3, 4, 5, 6, 7};
-const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1};
-const uint8_t VOICE_TO_SM[NUM_VOICES] = {0, 1, 2, 3, 0, 1};
+const uint8_t RESET_PINS[NUM_VOICES] = {13, 8, 12, 9, 11, 10, 16, 19};
+//const uint8_t RANGE_PINS[NUM_VOICES] = {14, 17};
+const uint8_t GATE_PINS[NUM_VOICES] = {2, 3, 4, 5, 6, 7, 15, 18};
+const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1, 1, 1};
+const uint8_t VOICE_TO_SM[NUM_VOICES] = {0, 1, 2, 3, 0, 1, 2, 3};
 const uint16_t DIV_COUNTER = 1250;
 uint8_t RANGE_PWM_SLICES[NUM_VOICES];
 
@@ -79,18 +79,18 @@ int main() {
 
     // pwm init
     for (int i=0; i<NUM_VOICES; i++) {
-        gpio_set_function(RANGE_PINS[i], GPIO_FUNC_PWM);
-        RANGE_PWM_SLICES[i] = pwm_gpio_to_slice_num(RANGE_PINS[i]);
-        pwm_set_wrap(RANGE_PWM_SLICES[i], DIV_COUNTER);
-        pwm_set_enabled(RANGE_PWM_SLICES[i], true);
+        //gpio_set_function(RANGE_PINS[i], GPIO_FUNC_PWM);
+        //RANGE_PWM_SLICES[i] = pwm_gpio_to_slice_num(RANGE_PINS[i]);
+        //pwm_set_wrap(RANGE_PWM_SLICES[i], DIV_COUNTER);
+        //pwm_set_enabled(RANGE_PWM_SLICES[i], true);
     }
 
     // pio init
     uint offset[2];
-    offset[0] = pio_add_program(pio[0], &frequency_program);
-    offset[1] = pio_add_program(pio[1], &frequency_program);
+    //offset[0] = pio_add_program(pio[0], &frequency_program);
+    //offset[1] = pio_add_program(pio[1], &frequency_program);
     for (int i=0; i<NUM_VOICES; i++) {
-        init_sm(pio[VOICE_TO_PIO[i]], VOICE_TO_SM[i], offset[VOICE_TO_PIO[i]], RESET_PINS[i]);
+        //init_sm(pio[VOICE_TO_PIO[i]], VOICE_TO_SM[i], offset[VOICE_TO_PIO[i]], RESET_PINS[i]);
     }
 
     // gate gpio init
@@ -132,16 +132,16 @@ int main() {
 }
 
 void init_sm(PIO pio, uint sm, uint offset, uint pin) {
-    init_sm_pin(pio, sm, offset, pin);
-    pio_sm_set_enabled(pio, sm, true);
+    //init_sm_pin(pio, sm, offset, pin);
+    //pio_sm_set_enabled(pio, sm, true);
 }
 
 void set_frequency(PIO pio, uint sm, float freq) {
-    uint32_t clk_div = clock_get_hz(clk_sys) / 2 / freq;
-    if (freq == 0) clk_div = 0;
-    pio_sm_put(pio, sm, clk_div);
-    pio_sm_exec(pio, sm, pio_encode_pull(false, false));
-    pio_sm_exec(pio, sm, pio_encode_out(pio_y, 32));
+    //uint32_t clk_div = clock_get_hz(clk_sys) / 2 / freq;
+    //if (freq == 0) clk_div = 0;
+    //pio_sm_put(pio, sm, clk_div);
+    //pio_sm_exec(pio, sm, pio_encode_pull(false, false));
+    //pio_sm_exec(pio, sm, pio_encode_out(pio_y, 32));
 }
 
 float get_freq_from_midi_note(uint8_t note) {
@@ -273,10 +273,10 @@ void note_on(uint8_t note, uint8_t velocity) {
         VOICE_NOTES[voice_num] = note;
         VOICE_GATE[voice_num] = 1;
 
-        float freq = get_freq_from_midi_note(note) * (1 + (pow(-1, i) * DETUNE));
-        set_frequency(pio[VOICE_TO_PIO[voice_num]], VOICE_TO_SM[voice_num], freq);
+        // float freq = get_freq_from_midi_note(note) * (1 + (pow(-1, i) * DETUNE));
+        // set_frequency(pio[VOICE_TO_PIO[voice_num]], VOICE_TO_SM[voice_num], freq);
         // amplitude adjustment
-        pwm_set_chan_level(RANGE_PWM_SLICES[voice_num], pwm_gpio_to_channel(RANGE_PINS[voice_num]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
+        // pwm_set_chan_level(RANGE_PWM_SLICES[voice_num], pwm_gpio_to_channel(RANGE_PINS[voice_num]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
         // gate on
         gpio_put(GATE_PINS[voice_num], 1);
     }
