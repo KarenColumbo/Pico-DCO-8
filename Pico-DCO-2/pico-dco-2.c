@@ -6,19 +6,19 @@
 #include "hardware/adc.h"
 #include "hardware/pio.h"
 #include "hardware/clocks.h"
-#include "pico-dco-2.pio.h"
+#include "pico-dco.pio.h"
 #include "hardware/pwm.h"
 #include "bsp/board.h"
 #include "tusb.h"
 #include "hardware/uart.h"
 
-#define NUM_VOICES 8
+#define NUM_VOICES 6
 #define MIDI_CHANNEL 1
-//#define USE_ADC_STACK_VOICES // gpio 28 (adc 2)
+#define USE_ADC_STACK_VOICES // gpio 28 (adc 2)
 #define USE_ADC_DETUNE       // gpio 27 (adc 1)
 #define USE_ADC_FM           // gpio 26 (adc 0)
 
-uint STACK_VOICES = 0;
+uint STACK_VOICES = 1;
 float DETUNE = 0.0f, LAST_DETUNE = 0.0f;
 float FM_VALUE = 0.0f;  
 float LAST_FM = 0.0f;
@@ -28,15 +28,13 @@ float LAST_FM = 0.0f;
 float FM_INTENSITY = 5.0f;          
 
 const float BASE_NOTE = 440.0f;
-//const uint8_t RESET_PINS[NUM_VOICES] = {13, 8, 12, 9, 11, 10, 7, 6};
-const uint8_t AT_PIN = {20}; //is this correct?
-const uint8_t MW_PIN = {21}; //is this correct?
-const uint8_t CV_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17, 13, 12};
-const uint8_t GATE_PINS[NUM_VOICES] = {2, 3, 4, 5, 6, 7, 8, 9};
-const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1, 1, 1};
-const uint8_t VOICE_TO_SM[NUM_VOICES] = {0, 1, 2, 3, 0, 1, 2, 3};
+const uint8_t RESET_PINS[NUM_VOICES] = {13, 8, 12, 9, 11, 10};
+const uint8_t RANGE_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17};
+const uint8_t GATE_PINS[NUM_VOICES] = {2, 3, 4, 5, 6, 7};
+const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1};
+const uint8_t VOICE_TO_SM[NUM_VOICES] = {0, 1, 2, 3, 0, 1};
 const uint16_t DIV_COUNTER = 1250;
-uint8_t CV_PWM_SLICES[NUM_VOICES];
+uint8_t RANGE_PWM_SLICES[NUM_VOICES];
 
 uint32_t VOICES[NUM_VOICES];
 uint8_t VOICE_NOTES[NUM_VOICES];
@@ -72,12 +70,7 @@ int main() {
     gpio_init(23);
     gpio_set_dir(23, GPIO_OUT);
     gpio_put(23, 1);
-    //
-    //
-    // repeat this for pins 20 and 21 (AT & MW)???
-    //
-    //
-    
+
     // init serial midi
     uart_init(uart0, 31250);
     uart_set_fifo_enabled(uart0, true);
@@ -86,10 +79,10 @@ int main() {
 
     // pwm init
     for (int i=0; i<NUM_VOICES; i++) {
-        gpio_set_function(CV_PINS[i], GPIO_FUNC_PWM);
-        CV_PWM_SLICES[i] = pwm_gpio_to_slice_num(CV_PINS[i]);
-        pwm_set_wrap(CV_PWM_SLICES[i], DIV_COUNTER);
-        pwm_set_enabled(CV_PWM_SLICES[i], true);
+        gpio_set_function(RANGE_PINS[i], GPIO_FUNC_PWM);
+        RANGE_PWM_SLICES[i] = pwm_gpio_to_slice_num(RANGE_PINS[i]);
+        pwm_set_wrap(RANGE_PWM_SLICES[i], DIV_COUNTER);
+        pwm_set_enabled(RANGE_PWM_SLICES[i], true);
     }
 
     // pio init
@@ -97,7 +90,7 @@ int main() {
     offset[0] = pio_add_program(pio[0], &frequency_program);
     offset[1] = pio_add_program(pio[1], &frequency_program);
     for (int i=0; i<NUM_VOICES; i++) {
-        init_sm(pio[VOICE_TO_PIO[i]], VOICE_TO_SM[i], offset[VOICE_TO_PIO[i]]);
+        init_sm(pio[VOICE_TO_PIO[i]], VOICE_TO_SM[i], offset[VOICE_TO_PIO[i]], RESET_PINS[i]);
     }
 
     // gate gpio init
@@ -105,21 +98,16 @@ int main() {
         gpio_init(GATE_PINS[i]);
         gpio_set_dir(GATE_PINS[i], GPIO_OUT);
     }
-    //
-    //
-    // gpio init for modwheel and aftertouch, too???
-    //
-    //
 
     // adc init
-    #if defined(defined(USE_ADC_DETUNE) || defined(USE_ADC_FM) 
+    #if defined(USE_ADC_STACK_VOICES) || defined(USE_ADC_DETUNE) || defined(USE_ADC_FM) 
     adc_init();
     #ifdef USE_ADC_DETUNE
     adc_gpio_init(27);
     #endif
-    //#ifdef USE_ADC_STACK_VOICES
-    //adc_gpio_init(28);
-    //#endif
+    #ifdef USE_ADC_STACK_VOICES
+    adc_gpio_init(28);
+    #endif
     #ifdef USE_ADC_FM
     adc_gpio_init(26);
     #endif
@@ -136,7 +124,7 @@ int main() {
         usb_midi_task();
         serial_midi_task();
         voice_task();
-        #if defined(USE_ADC_DETUNE) || defined(USE_ADC_FM)
+        #if defined(USE_ADC_STACK_VOICES) || defined(USE_ADC_DETUNE) || defined(USE_ADC_FM)
         adc_task();
         #endif
         led_blinking_task();
@@ -270,11 +258,6 @@ void serial_midi_task() {
              portamento = msb > 63;
         }
     }
-    //
-    //
-    // Insert Channel Aftertouch & Modwheel here!!! 
-    //
-    //
 }
 
 void note_on(uint8_t note, uint8_t velocity) {
@@ -292,9 +275,9 @@ void note_on(uint8_t note, uint8_t velocity) {
 
         float freq = get_freq_from_midi_note(note) * (1 + (pow(-1, i) * DETUNE));
         set_frequency(pio[VOICE_TO_PIO[voice_num]], VOICE_TO_SM[voice_num], freq);
-         amplitude adjustment
-        pwm_set_chan_level(CV_PWM_SLICES[voice_num], pwm_gpio_to_channel(CV_PINS[voice_num]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
-         gate on
+        // amplitude adjustment
+        pwm_set_chan_level(RANGE_PWM_SLICES[voice_num], pwm_gpio_to_channel(RANGE_PINS[voice_num]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
+        // gate on
         gpio_put(GATE_PINS[voice_num], 1);
     }
     if (portamento) {
@@ -314,7 +297,7 @@ void note_off(uint8_t note) {
         if (VOICE_NOTES[i] == note) {
             gpio_put(GATE_PINS[i], 0);
 
-            VOICE_NOTES[i] = 0;
+            //VOICE_NOTES[i] = 0;
             VOICES[i] = 0;
             VOICE_GATE[i] = 0;
         }
@@ -366,15 +349,10 @@ void voice_task() {
             float freq = get_freq_from_midi_note(VOICE_NOTES[i]) * (1 + (pow(-1, i) * DETUNE));
 
             freq += FM_VALUE * FM_INTENSITY; // Add linear frequency modulation
-           
+            
             freq = freq-(freq*((0x2000-midi_pitch_bend)/67000.0f));
             set_frequency(pio[VOICE_TO_PIO[i]], VOICE_TO_SM[i], freq);
-            pwm_set_chan_level(CV_PWM_SLICES[i], pwm_gpio_to_channel(CV_PINS[i]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
-            //
-            //
-            // Write Aftertouch and Modwheel here!!!
-            //
-            //
+            pwm_set_chan_level(RANGE_PWM_SLICES[i], pwm_gpio_to_channel(RANGE_PINS[i]), (int)(DIV_COUNTER*(freq*0.00025f-1/(100*freq))));
         }
     }
 }
