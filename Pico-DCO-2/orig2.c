@@ -28,8 +28,8 @@ float LAST_FM = 0.0f;
 float FM_INTENSITY = 5.0f;          
 
 const float BASE_NOTE = 440.0f;
-const uint8_t RESET_PINS[NUM_VOICES] = {13, 12, 11, 10};
-const uint8_t RANGE_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17};
+//const uint8_t RESET_PINS[NUM_VOICES] = {13, 12, 11, 10};
+//const uint8_t RANGE_PINS[NUM_VOICES] = {16, 19, 15, 18, 14, 17};
 const uint8_t GATE_PINS[NUM_VOICES] = {2, 3, 4, 5, 6, 7, 8, 9};
 const uint8_t VOICE_TO_PIO[NUM_VOICES] = {0, 0, 0, 0, 1, 1, 1, 1};
 const uint8_t VOICE_TO_SM[NUM_VOICES] = {0, 1, 2, 3, 0, 1, 2, 3};
@@ -79,10 +79,10 @@ int main() {
 
     // pwm init
     for (int i=0; i<NUM_VOICES; i++) {
-        gpio_set_function(RANGE_PINS[i], GPIO_FUNC_PWM);
-        RANGE_PWM_SLICES[i] = pwm_gpio_to_slice_num(RANGE_PINS[i]);
-        pwm_set_wrap(RANGE_PWM_SLICES[i], DIV_COUNTER);
-        pwm_set_enabled(RANGE_PWM_SLICES[i], true);
+        //gpio_set_function(RANGE_PINS[i], GPIO_FUNC_PWM);
+        //RANGE_PWM_SLICES[i] = pwm_gpio_to_slice_num(RANGE_PINS[i]);
+        //pwm_set_wrap(RANGE_PWM_SLICES[i], DIV_COUNTER);
+        //pwm_set_enabled(RANGE_PWM_SLICES[i], true);
     }
 
     // pio init
@@ -90,7 +90,7 @@ int main() {
     offset[0] = pio_add_program(pio[0], &frequency_program);
     offset[1] = pio_add_program(pio[1], &frequency_program);
     for (int i=0; i<NUM_VOICES; i++) {
-        init_sm(pio[VOICE_TO_PIO[i]], VOICE_TO_SM[i], offset[VOICE_TO_PIO[i]], RESET_PINS[i]);
+        //init_sm(pio[VOICE_TO_PIO[i]], VOICE_TO_SM[i], offset[VOICE_TO_PIO[i]], RESET_PINS[i]);
     }
 
     // gate gpio init
